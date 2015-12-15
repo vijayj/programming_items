@@ -21,6 +21,12 @@ class Tree
     end
   end
 
+  def delete(data)
+    return -1 if root == nil || root.findNode(data) == -1
+    x = root.deleteNode(data)
+    p "tree delete #{x}"
+  end
+
   def p_node(node)
      " #{node.data} #{node.parent ? node.parent.data : 'root'} #{node.size}\n"
   end
@@ -143,6 +149,84 @@ class TreeNode
     end
 
   end
+
+  def deleteNode(data)
+    if data < self.data
+      if self.left
+        result = self.left.deleteNode(data)
+        p "#{result}..for node #{self.data}"
+        if result
+          p "decreasing size for node #{self.data}"
+          self.size -= 1
+          result
+        end
+      else
+        return false
+      end
+    elsif data > self.data
+      if self.right
+        result = self.right.deleteNode(data)
+        p "#{result}..for r node #{self.data}"
+        if result
+          p "decreasing size for r node #{self.data}"
+          self.size -= 1
+          result
+        end
+      else
+        return false
+      end
+    else self.data == data
+      #4 cases
+      if self.is_leaf?
+        replace_node(:none,self)
+      elsif left_node_exists?(self) && !right_node_exists?(self)
+        replace_node(:left,self)
+      elsif !left_node_exists?(self) && right_node_exists?(self)
+        replace_node(:right,self)
+        # self.parent.left = self.left
+      else
+        #4th case - both child
+        successor = self.right.find_min
+        p "sucessor is #{successor.data}"
+        self.data = successor.data
+        p "rs sucessor is #{successor.data}"
+        result = self.right.deleteNode(successor.data)
+      end
+
+      self.size -= 1
+      true
+    end
+  end
+
+  def find_min
+    min = self
+    if self.left
+      min = self.left.find_min
+    end
+    return min
+  end
+
+  def replace_node(child_position, node)
+    if self.parent
+      left_child = (parent.left == node)
+      case child_position
+      when :none
+        left_child ? parent.left = nil : parent.right = nil
+      when :left
+        left_child ? parent.left = node.left : parent.right = node.left
+      when :right
+        left_child ? parent.right = node.right : parent.right = node.right
+      end
+    end
+
+    unless child_position == :none
+      if child_position == :left
+        node.left.parent = parent
+      elsif child_position == :right
+        node.right.parent = parent
+      end
+    end
+  end
 end
 
 
@@ -150,11 +234,21 @@ t  = Tree.new()
 [11, 21, 15, 12, 1, 2, 14, 10,18, 7, 4].each {|x| t.insert(x) }
 puts t.to_s
 
-[{10 => 15},{1=> 111},{15=> 14}, {1=> 4}].each do |pair|
+[{1=> 111},{15=> 14}, {1=> 4}].each do |pair|
   a = pair.keys.first
   b = pair.values.first
   p "find common ancestor #{a} #{b}"
   puts t.find_common_ancestor(a, b)
+end
+
+p "DELETION CASES..initial state"
+puts t.to_s
+
+[14,15,2,10,11].each do |node|
+  p "delete #{node}"
+  p t.delete(node)
+  puts t.to_s
+  gets
 end
 
 # 0.upto(10) do |x|
