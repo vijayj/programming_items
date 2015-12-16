@@ -22,6 +22,9 @@ end
 
 class Heap
 
+  attr_reader :heap_size
+  alias_method :size, :heap_size
+
   def initialize(a = [], comparator = nil)
     @comparator = comparator || lambda { |x,y| (x <=> y) > 0 }
     @backing_store = []
@@ -32,7 +35,7 @@ class Heap
   end
 
   def heapify_all
-    last_non_leaf_node = @heap_size/2
+    last_non_leaf_node =  @heap_size/2
     last_non_leaf_node.downto(1) do |index|
       # p "heap start node #{index}"
       heapify(index)
@@ -40,6 +43,11 @@ class Heap
   end
   # def insert(element)
   # end
+
+  def clear
+    @backing_store.clear
+    @heap_size = 0
+  end
 
   def heapify(index = 1)
       left = 2*index
@@ -74,6 +82,10 @@ class Heap
         exchange(index, largest_index)
         heapify(largest_index)
       end
+  end
+
+  def top
+    return get_element(1) if @heap_size > 1
   end
 
   def extract_top
